@@ -103,6 +103,15 @@ RCT_EXPORT_METHOD(upload:
     NSString *fieldName = settings[FIELD_NAME_FIELD];
     
     NSMutableData *body = [NSMutableData data];
+
+    NSDictionary *extraData = settings[@"data"];
+    for (NSString *field in [extraData allKeys]) {
+        [self append:[NSString stringWithFormat:@"%@%@%@", TWO_HYPHENS, boundary, LINE_END] to:body];
+        [self append:[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"%@", field, LINE_END] to:body];
+        [self append:[NSString stringWithFormat:@"Content-Type: text/plain%@", LINE_END] to:body];
+        [self append:[NSString stringWithFormat:@"%@%@%@", LINE_END, extraData[field], LINE_END] to:body];
+    }
+
     [self append:[NSString stringWithFormat:@"%@%@%@", TWO_HYPHENS, boundary, LINE_END] to:body];
     [self append:[NSString stringWithFormat:@"Content-Disposition: form-data; name=%@; filename=%@%@", fieldName, filename, LINE_END] to:body];
     [self append:[NSString stringWithFormat:@"Content-Type: %@%@", contentType, LINE_END] to:body];
@@ -111,15 +120,7 @@ RCT_EXPORT_METHOD(upload:
     [self append:LINE_END to:body];
     [body appendData:data];
     [self append:LINE_END to:body];
-    
-    NSDictionary *extraData = settings[@"data"];
-    for (NSString *field in [extraData allKeys]) {
-        [self append:[NSString stringWithFormat:@"%@%@%@", TWO_HYPHENS, boundary, LINE_END] to:body];
-        [self append:[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"%@", field, LINE_END] to:body];
-        [self append:[NSString stringWithFormat:@"Content-Type: text/plain%@", LINE_END] to:body];
-        [self append:[NSString stringWithFormat:@"%@%@%@", LINE_END, extraData[field], LINE_END] to:body];
-    }
-    
+
     [self append:[NSString stringWithFormat:@"%@%@%@%@", TWO_HYPHENS, boundary, TWO_HYPHENS, LINE_END] to:body];
     
     NSString *postLength = [NSString stringWithFormat:@"%d", (int) [body length]];
